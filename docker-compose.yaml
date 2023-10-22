@@ -1,0 +1,65 @@
+version: '3.7'
+
+services:
+  # MySQL database service
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: examplepassword
+      MYSQL_DATABASE: myapp_production
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - myapp-network
+
+  # Ruby on Rails application service (Production)
+  web:
+    build: .
+    command: bundle exec rails server -b 0.0.0.0 -e production
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    networks:
+      - myapp-network
+    environment:
+      DATABASE_URL: "mysql2://root:examplepassword@mysql/myapp_production"
+    links:
+      - mysql
+
+  # Staging server for the Rails application
+  staging:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./public:/usr/share/nginx/html
+    networks:
+      - myapp-network
+    depends_on:
+      - web
+
+  # Ruby on Rails application service (Development)
+  development:
+    build: .
+    command: bundle exec rails server -b 0.0.0.0 -e development
+    volumes:
+      - .:/app
+    ports:
+      - "3001:3000"
+    depends_on:
+      - mysql
+    networks:
+      - myapp-network
+    environment:
+      DATABASE_URL: "mysql2://root:examplepassword@mysql/myapp_production"
+      RAILS_ENV: development
+
+networks:
+  myapp-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
