@@ -29,7 +29,6 @@ ssh_password = 'your_ssh_password'
 
 # List of tasks to be executed on the instance
 tasks = [
-  "sudo apt-get update",
   "sudo apt-get install -y vim curl git unzip",
   "sudo ufw allow 22/tcp",
   "sudo apt-get install -y mysql-server",
@@ -37,6 +36,9 @@ tasks = [
   "echo 'export PATH=\"$HOME/.rbenv/bin:$PATH\"' >> ~/.bashrc",
   "echo 'eval \"$(rbenv init -)\"' >> ~/.bashrc"
 ]
+
+# Update task (execute before the threads)
+run_command("sudo apt-get update")
 
 # Create an array of threads to execute tasks concurrently
 threads = tasks.map do |task|
