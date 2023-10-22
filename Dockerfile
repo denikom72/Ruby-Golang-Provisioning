@@ -13,8 +13,14 @@ RUN gem install bundler && bundle install
 # Copy the rest of the application code into the container
 COPY . .
 
+# Install Golang
+RUN apt-get update && apt-get install -y golang
+
+# Copy your Golang provisioner script into the container
+COPY provisioner.go /app/provisioner.go
+
 # Expose port 3000 for the Rails application
 EXPOSE 3000
 
-# Command to start the Rails application
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+# Set the provisioner script as the entry point
+CMD ["go", "run", "/app/provisioner.go"]
