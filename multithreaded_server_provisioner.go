@@ -19,54 +19,59 @@ const (
 	sshPassword = "your_ssh_password"
 )
 
-// Define provisioning tasks
-var tasks = []string{
-	"sudo apt-get update",
-	"sudo apt-get install -y vim curl git unzip",
-	"sudo ufw allow 22/tcp",
-	"sudo apt-get install -y mysql-server",
-	"git clone https://github.com/rbenv/rbenv.git ~/.rbenv",
-	`echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc`,
-	`echo 'eval "$(rbenv init -)"' >> ~/.bashrc`,
+// Define a function to execute SSH commands
+func sshExec(host, username, password, command string) {
+	client, err := ssh.Dial("tcp", host+":"+sshPort, &ssh.ClientConfig{
+		User: username,
+		Auth: []ssh.AuthMethod{ssh.Password(password)},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	})
+	if err != nil {
+		log.Fatalf("Failed to dial: %v", err)
+	}
+	defer client.Close()
+
+	session, err := client.NewSession()
+	if err != nil {
+		log.Fatalf("Failed to create session: %v", err)
+	}
+	defer session.Close()
+
+	// Execute the command
+	output, err := session.CombinedOutput(command)
+	if err != nil {
+		log.Fatalf("Command failed: %v", err)
+	}
+	fmt.Printf("[%s] %s", host, strings.TrimSpace(string(output)))
 }
 
 func main() {
 	var wg sync.WaitGroup
 
-	// Create an SSH client configuration
-	config := &ssh.ClientConfig{
-		User: sshUser,
-		Auth: []ssh.AuthMethod{ssh.Password(sshPassword)},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // For demo purposes; should be used securely in production.
+	// List of tasks to be executed on the instance
+	tasks := []string{
+		"sudo apt-get install -y vim curl git unzip",
+		"sudo ufw allow 22/tcp",
+		"sudo apt-get install -y mysql-server",
+		"git clone https://github.com/rbenv/rbenv.git ~/.rbenv",
+		`echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc`,
+		`echo 'eval "$(rbenv init -)"' >> ~/.bashrc`,
 	}
 
-	// Start a Goroutine for each task
+	// Update task (execute before the goroutines)
+	cmd := "sudo apt-get update"
+	cmdOutput, err := exec.Command("bash", "-c", cmd).CombinedOutput()
+	if err != nil {
+		log.Fatalf("Command failed: %v", err)
+	}
+	fmt.Printf("%s", cmdOutput)
+
+	// Create a Goroutine for each task
 	for _, task := range tasks {
 		wg.Add(1)
 		go func(task string) {
 			defer wg.Done()
-
-			client, err := ssh.Dial("tcp", sshHost+":"+sshPort, config)
-			if err != nil {
-				log.Printf("Failed to dial: %v", err)
-				return
-			}
-			defer client.Close()
-
-			session, err := client.NewSession()
-			if err != nil {
-				log.Printf("Failed to create session: %v", err)
-				return
-			}
-			defer session.Close()
-
-			// Execute the task
-			output, err := session.CombinedOutput(task)
-			if err != nil {
-				log.Printf("Task failed: %v", err)
-			} else {
-				log.Printf("Task succeeded: %s", strings.TrimSpace(string(output)))
-			}
+			sshExec(sshHost, sshUser, sshPassword, task)
 		}(task)
 	}
 
