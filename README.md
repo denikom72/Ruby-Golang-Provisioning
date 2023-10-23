@@ -1,5 +1,2 @@
 # Ruby-Golang-Provisioning
-Devop-provisioning scripts in golang and ruby with docker-compose for rails apps and more. 
-                      Bash: docker-compose up -> runs docker-compose.yaml and Dockerfile to build&setup an image
-and more service as a rails-dev, staging, production and separate mysql-server ( At least the production server should be run with docker-swarm or kubernetes ). 
-The other devop-scripts can be used via "docker exec .... ".
+DevOps provisioning scripts are created in Golang and Ruby to manage Docker-compose configurations for Rails applications and their associated services. The process involves using Bash commands such as 'docker-compose up,' which triggers the execution of 'docker-compose.yaml' and 'Dockerfile' to build and set up an image. The services include a Rails development environment, a staging server, a production server, and a separate MySQL server. Notably, the production server is intended to be run using Docker Swarm or Kubernetes. Other DevOps scripts can be utilized through the 'docker exec' command.
