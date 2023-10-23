@@ -19,7 +19,7 @@
 # Generate a textual form:
 # form_data = voip_provis.generate_textual_form('model_name', 'product_name', 'brand_name', ['hide_item1', 'hide_item2'])
 #
-# Author: [Your Name]
+# Author: Denis Komnenovic
 # Version: 1.0
 class VoipProvisGUI
   def initialize(base)
