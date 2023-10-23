@@ -1,3 +1,4 @@
+// Author: Denis Komnenovic
 package main
 
 import (
