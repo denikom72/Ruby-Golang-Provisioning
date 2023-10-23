@@ -1,8 +1,32 @@
+# VoipProvisGUI Class
+#
+# This class provides methods for generating a textual form from a model, product, and brand.
+# It includes functionality to convert structured data into HTML forms.
+#
+# Class Methods:
+# - initialize(base): Initializes the class with a base directory path.
+# - generate_textual_form(model, product, brand, hide_array = []): Generates a textual form based on the provided data.
+# - generate_complete_array(model, product, brand): Generates a structured data array.
+# - arraysearchrecursive(needle, haystack, needle_key = '', strict = false, path = []): Recursive search in an array.
+# - convert2html(key, data): Converts structured data into HTML form elements.
+# - file2json(file): Reads a JSON file and returns its contents as a Hash.
+#
+# Example Usage:
+#
+# Initialize the class:
+# voip_provis = VoipProvisGUI.new('/path/to/base_directory')
+#
+# Generate a textual form:
+# form_data = voip_provis.generate_textual_form('model_name', 'product_name', 'brand_name', ['hide_item1', 'hide_item2'])
+#
+# Author: [Your Name]
+# Version: 1.0
 class VoipProvisGUI
   def initialize(base)
     @base = base
   end
 
+  # Generates a textual form based on the provided model, product, and brand.
   def generate_textual_form(model, product, brand, hide_array = [])
     template_array = generate_complete_array(model, product, brand)
     html = {}
@@ -48,6 +72,7 @@ class VoipProvisGUI
     html
   end
 
+  # Generates a structured data array based on the model, product, and brand.
   def generate_complete_array(model, product, brand)
     data = {}
     fd_json = file2json(File.join(@base, brand, product, 'family_data.json'))
@@ -87,7 +112,7 @@ class VoipProvisGUI
                     items_loop[var_nam] ||= {}
                     items_loop[var_nam][z] = item_loop
                     items_loop[var_nam][z]['description'].gsub!('{$count}', i.to_s)
-                    items_loop[var_nam][z]['default_value'].gsub!('{$count}', i.to_s)
+                    items_loop[var_nam][z]['default_value'].gsub!('{$count}', i.to s)
                     items_loop[var_nam][z]['line_loop'] = true
                     items_loop[var_nam][z]['line_count'] = i
                   end
@@ -144,6 +169,7 @@ class VoipProvisGUI
     data
   end
 
+  # Recursive search in an array.
   def arraysearchrecursive(needle, haystack, needle_key = '', strict = false, path = [])
     return false unless haystack.is_a?(Array)
 
@@ -160,6 +186,7 @@ class VoipProvisGUI
     false
   end
 
+  # Converts structured data into HTML form elements.
   def convert2html(key, data)
     html_return = ''
     case data['type']
@@ -170,7 +197,7 @@ class VoipProvisGUI
       html_return = '<br/>'
     when 'list'
       html_return = "#{data['description']}: <select name='#{key}'>"
-      value = data['value'].to_s.empty? ? data['default_value'] : data['value']
+      value = data['value'].to_s empty? data['default_value'] : data['value']
       data['data'].each do |list|
         selected = value == list['value'] ? 'selected' : ''
         html_return += "<option value='#{list['value']}' #{selected}>#{list['text']}</option>"
@@ -191,6 +218,7 @@ class VoipProvisGUI
     html_return
   end
 
+  # Reads a JSON file and returns its contents as a Hash.
   def file2json(file)
     raise 'cant find file' unless File.exist?(file)
 
